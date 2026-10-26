@@ -1,0 +1,6 @@
+{
+  "name": "graze-open",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Graze Open: route every AI call to the cheapest open model that can do the job, on Nebius."
+}

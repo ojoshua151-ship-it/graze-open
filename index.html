@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Graze Open routes every AI call to the cheapest open model that can do the job, running on open NVIDIA Nemotron models.">
+<meta name="theme-color" content="#08070C">
+<title>Graze Open: every AI call on the cheapest open model that can do the job</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Karla:wght@300;400&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--page:#08070C;--text:#F2F1F6;--text-2:#A8A4B8;--text-3:#8B8799;--hair:rgba(255,255,255,.09);--fill:rgba(255,255,255,.028);--accent:#6C5CE7;--accent-2:#9B8BF5;--warm:#E9B78E;--ok:#5FD3A0;
+--display:'Inter',system-ui,sans-serif;--body:'Karla',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);overflow-x:clip}
+body{margin:0;background:var(--page);color:var(--text);font-family:var(--body);font-weight:300;font-size:16px;line-height:1.7;overflow-x:clip}
+.glow{position:fixed;inset:0;z-index:0;pointer-events:none;filter:blur(90px)}
+.glow i{position:absolute;border-radius:50%}
+.glow i:nth-child(1){width:46vw;height:46vw;left:-8vw;top:-14vw;background:rgba(108,92,231,.58)}
+.glow i:nth-child(2){width:34vw;height:34vw;right:-6vw;top:18vh;background:rgba(108,92,231,.2)}
+.glow i:nth-child(3){width:50vw;height:22vw;left:25vw;bottom:-14vw;background:rgba(233,183,142,.34)}
+.dots{position:fixed;inset:0;z-index:1;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.032) .5px,transparent .6px);background-size:9px 9px;-webkit-mask-image:linear-gradient(to bottom,transparent 4%,#000 38%,#000);mask-image:linear-gradient(to bottom,transparent 4%,#000 38%,#000)}
+.grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.34;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+main,nav,footer{position:relative;z-index:3}
+nav{position:sticky;top:env(safe-area-inset-top,0px);display:flex;align-items:center;justify-content:space-between;padding:16px clamp(20px,5vw,64px);backdrop-filter:blur(14px);background:rgba(8,7,12,.55);border-bottom:1px solid var(--hair)}
+.logo{font-family:var(--display);font-weight:500;letter-spacing:-.03em;font-size:18px;color:var(--text);text-decoration:none}
+.logo span{color:var(--accent-2)}
+.btn{display:inline-flex;align-items:center;font-family:var(--body);font-weight:400;font-size:13px;padding:8px 16px;border-radius:9px;text-decoration:none;color:#fff;background:linear-gradient(140deg,var(--accent),var(--accent-2));box-shadow:0 12px 28px -14px rgba(108,92,231,.7),inset 0 1px 0 rgba(255,255,255,.3);transition:transform .18s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:var(--fill);border:1px solid var(--hair);box-shadow:none;color:var(--text)}
+section{padding:clamp(72px,9vw,132px) clamp(24px,7vw,96px)}
+.wrap{max-width:1160px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:500;letter-spacing:-.042em;margin:0}
+h1{font-size:clamp(37px,5.6vw,72px);line-height:1.05;max-width:16ch}
+h2{font-size:clamp(28px,3.6vw,46px);line-height:1.12;max-width:20ch}
+h3{font-size:20px;letter-spacing:-.02em;line-height:1.2}
+.tint{display:inline-block;background:linear-gradient(104deg,var(--accent-2) 8%,var(--accent) 92%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.muted{color:var(--text-3)}
+.lead{color:var(--text-2);font-size:clamp(15px,1.35vw,16.5px);max-width:min(100%,52ch);margin:20px 0 32px}
+.badge{display:inline-block;font-size:12.5px;color:var(--text-2);border:1px solid var(--hair);background:var(--fill);padding:6px 14px;border-radius:999px;margin-bottom:22px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;min-height:calc(100svh - 70px)}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.demo{background:#fff;color:#14131a;border-radius:30px;padding:26px;max-width:430px;width:100%;justify-self:end;box-shadow:0 40px 90px -40px rgba(0,0,0,.9),0 8px 30px -12px rgba(108,92,231,.28)}
+.demo p{margin:0}
+.dl{font-size:13px;color:#6b6877}
+.tabs{display:flex;flex-direction:column;gap:8px;margin:12px 0 20px}
+.tab{font:400 14px var(--body);text-align:left;padding:11px 14px;border-radius:12px;border:1px solid #e6e4ee;background:#faf9fd;color:#14131a;cursor:pointer}
+.tab:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tab[aria-pressed=true]{border-color:var(--accent);background:#f1effd}
+.res{border-top:1px solid #e6e4ee;padding-top:18px;display:grid;gap:8px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.row b{font-weight:400;font-family:var(--mono);font-size:12.5px;text-align:right}
+.save{margin-top:6px;font-family:var(--display);font-weight:500;letter-spacing:-.03em;font-size:34px;color:#3c8f6a}
+.fine{font-size:12.5px;color:var(--text-3);margin-top:14px}
+.demo .fine{color:#6b6877}
+.head{margin-bottom:44px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--fill);border:1px solid var(--hair);border-radius:18px;padding:26px;min-width:0}
+.card p{color:var(--text-2);font-size:14.5px;line-height:1.65;margin:12px 0 0}
+.code{font-family:var(--mono);font-size:12px;color:var(--accent-2);margin-bottom:14px;display:block}
+.hl{background:linear-gradient(150deg,rgba(28,30,38,.92),rgba(18,20,27,.86));border-color:rgba(255,255,255,.16);box-shadow:0 18px 44px -18px rgba(108,92,231,.55),inset 0 1px 0 rgba(255,255,255,.14)}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1.15fr) 28px minmax(0,1.15fr) 28px minmax(0,1fr);align-items:stretch}
+.link{align-self:center;height:1px;background:linear-gradient(90deg,var(--hair),var(--accent-2))}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.chips span{font-family:var(--mono);font-size:11px;color:var(--text-2);border:1px solid var(--hair);border-radius:999px;padding:3px 10px}
+@media(max-width:900px){.flow{grid-template-columns:minmax(0,1fr)}.link{width:1px;height:22px;justify-self:center;background:linear-gradient(180deg,var(--hair),var(--accent-2))}}
+.ftabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.ft{font:400 13px var(--body);padding:8px 16px;border-radius:999px;border:1px solid var(--hair);background:var(--fill);color:var(--text-2);cursor:pointer}
+.ft[aria-pressed=true]{color:#fff;border-color:rgba(155,139,245,.6);background:rgba(108,92,231,.25)}
+.ft:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+.panel{background:var(--fill);border:1px solid var(--hair);border-radius:18px;padding:26px;min-width:0}
+.panel[hidden]{display:none}
+.panel .lead{margin:0 0 18px}
+.stp{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--hair);font-size:14.5px;color:var(--text-2);opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
+.stp.on{opacity:1;transform:none}
+.stp b{font-family:var(--mono);font-weight:400;font-size:12px;color:var(--accent-2);text-align:right}
+.big{font-family:var(--display);font-weight:500;letter-spacing:-.03em;font-size:30px;color:var(--ok);margin:14px 0 0}
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.arena{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.ac{border:1px solid var(--hair);border-radius:14px;padding:16px;font-size:14px;color:var(--text-2)}
+.ac.win{border-color:rgba(95,211,160,.6);background:rgba(95,211,160,.07)}
+.ac .sc{font-family:var(--display);font-size:26px;color:var(--text);margin:6px 0;visibility:hidden}
+.vd{visibility:hidden;font-size:12.5px}
+.arena.shown .sc,.arena.shown .vd{visibility:visible}
+@media(max-width:900px){.arena{grid-template-columns:minmax(0,1fr)}}
+.byok{margin-top:14px;border:1px solid var(--hair);border-radius:14px;padding:12px 16px;background:var(--fill)}
+.byok summary{cursor:pointer;font-weight:600}
+.byok p{margin:10px 0;font-size:13px;color:var(--text-3)}
+.byok .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.byok input{flex:1;min-width:200px;padding:9px 12px;border-radius:10px;border:1px solid var(--hair);background:rgba(255,255,255,.04);color:var(--text);font:13px var(--mono)}
+.byok #byok-state{font-size:13px;color:var(--ok)}
+.btn[disabled]{opacity:.55;cursor:progress;transform:none}
+.item.wait{color:var(--text-3)}
+.item.wait::before{content:"";display:inline-block;width:10px;height:10px;margin-right:10px;border-radius:50%;border:2px solid var(--accent-2);border-right-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.item.err{color:var(--text-3)}
+.tag{display:inline-block;font:400 11px var(--mono);padding:1px 8px;border-radius:99px;margin-right:8px;background:rgba(233,183,142,.16);color:var(--warm)}
+@media(prefers-reduced-motion:reduce){.stp,.bar i,.btn{transition:none}.btn:hover{transform:none}.item.wait::before{animation:none}}
+textarea{width:100%;min-height:150px;resize:vertical;background:rgba(0,0,0,.28);color:var(--text);border:1px solid var(--hair);border-radius:12px;padding:14px;font:400 13px/1.6 var(--mono);margin-bottom:14px}
+textarea:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+.out{margin-top:18px;display:grid;gap:10px}
+.item{border:1px solid var(--hair);border-radius:12px;padding:14px;font-size:14px;color:var(--text-2);min-width:0;overflow-wrap:anywhere}
+.item small{display:block;font-size:12.5px;color:var(--text-3);margin-top:6px}
+.pill{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;margin-right:8px;border:1px solid var(--hair);color:var(--text)}
+.pill.u{background:rgba(255,99,99,.18)}.pill.s{background:rgba(255,200,87,.16)}.pill.n{background:rgba(155,139,245,.2)}.pill.a{background:rgba(95,211,160,.18)}
+.head{scroll-margin-top:80px}
+.banner{position:relative;text-align:center;padding:clamp(36px,6vw,64px) 24px 0;overflow:hidden;border-bottom:1px solid var(--hair);background:linear-gradient(180deg,rgba(108,92,231,.14),transparent)}
+.mark{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,22px);font-family:var(--display);font-weight:500;font-size:clamp(38px,10vw,104px);line-height:1;letter-spacing:-.03em}
+.emb{width:.95em;height:.95em;filter:drop-shadow(0 0 16px rgba(108,92,231,.85))}
+.emb circle{fill:none;stroke:var(--accent-2);stroke-width:3}
+.emb .d{stroke:var(--accent);stroke-dasharray:4 5}
+.emb path{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.bt{margin:14px auto 0;color:var(--text-2);font-size:clamp(14px,1.6vw,17px)}
+.cl{position:absolute;top:30px;width:200px;height:120px;opacity:.5;fill:none;stroke:var(--accent-2);stroke-width:1.5}
+.cl.l{left:0}.cl.r{right:0;transform:scaleX(-1)}
+.sub{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.sub a{color:var(--text-2);font-size:13px;text-decoration:none;padding:10px 16px;border-bottom:2px solid transparent}
+.sub a:first-child{color:var(--text);border-color:var(--accent-2)}
+.sub a:hover{color:var(--text)}
+@media(max-width:900px){.cl{display:none}}
+.item.ai{white-space:pre-wrap}
+.band{text-align:center}
+.band h2{margin:0 auto}.band .lead{margin:20px auto 32px}.band .cta{justify-content:center}
+footer{margin:0 clamp(16px,3vw,40px) 28px;border:1px solid var(--hair);background:var(--fill);border-radius:22px;padding:34px clamp(20px,4vw,40px) 22px;font-size:14px;color:var(--text-3)}
+.fgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px}
+.fbrand p{color:var(--text-2);max-width:280px;margin:12px 0 18px;line-height:1.5}
+.fsoc{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--hair);border-radius:10px;color:var(--text-2);background:var(--fill)}
+.fsoc:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+.fsoc svg{width:16px;height:16px;fill:currentColor}
+.fcol h4{margin:0 0 14px;font-size:14px;font-weight:600;color:var(--text)}
+.fcol a{display:block;padding:5px 0;color:var(--text-2);text-decoration:none}
+.fcol a:hover{color:var(--text)}
+.fbot{margin-top:28px;padding-top:18px;border-top:1px solid var(--hair);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr}.fbrand{grid-column:1/-1}}
+footer a:focus-visible{outline:2px solid var(--accent-2);outline-offset:3px;border-radius:6px}
+@media(max-width:900px){.hero{grid-template-columns:minmax(0,1fr);min-height:0}.demo{justify-self:center}.steps{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:620px){nav .btn.ghost{display:none}}
+</style>
+</head>
+<body>
+<div class="glow"><i></i><i></i><i></i></div><div class="dots"></div><div class="grain"></div>
+<nav>
+  <a class="logo" href="#top">Graze <span>Open</span></a>
+  <div class="cta"><a class="btn ghost" href="https://usegraze.world" target="_blank" rel="noopener">usegraze.world</a><a class="btn" href="#try">Try the router</a></div>
+</nav>
+<main id="top">
+<header class="banner">
+  <svg class="cl l" viewBox="0 0 200 120" aria-hidden="true"><polyline points="0,30 60,30 80,50 160,50"/><polyline points="0,70 40,70 60,90 140,90"/><polyline points="0,102 100,102"/><circle cx="160" cy="50" r="3"/><circle cx="140" cy="90" r="3"/></svg>
+  <svg class="cl r" viewBox="0 0 200 120" aria-hidden="true"><polyline points="0,30 60,30 80,50 160,50"/><polyline points="0,70 40,70 60,90 140,90"/><polyline points="0,102 100,102"/><circle cx="160" cy="50" r="3"/><circle cx="140" cy="90" r="3"/></svg>
+  <div class="mark"><span>GRAZE</span><svg class="emb" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44"/><circle class="d" cx="50" cy="50" r="33"/><path d="M34 66 L72 28 M54 26 L74 26 L74 46"/></svg><span class="tint">OPEN</span></div>
+  <p class="bt">Build the next frontier of AI on open infrastructure</p>
+  <div class="sub" role="navigation" aria-label="Sections"><a href="#top">Overview</a><a href="#try">Demo</a><a href="#frontier">Frontier layer</a><a href="#tools">Tools</a></div>
+</header>
+<section><div class="wrap hero">
+  <div>
+    <span class="badge">Built for the Nebius x NVIDIA Global AI Hackathon</span>
+    <h1>Every AI call, on the cheapest open model <span class="tint">that can do the job.</span></h1>
+    <p class="lead">Graze Open reads each request, picks the smallest open model that will get it right, and runs it on open NVIDIA Nemotron models. You stop paying frontier prices for simple work.</p>
+    <div class="cta"><a class="btn" href="#try">See it route a request</a><a class="btn ghost" href="https://x.com/usegraze" target="_blank" rel="noopener">Follow @usegraze</a></div>
+  </div>
+  <div class="demo" id="try">
+    <p class="dl">Pick a request</p>
+    <div class="tabs" id="tabs"></div>
+    <div class="res" aria-live="polite">
+      <div class="row"><span>Sent to</span><b id="model"></b></div>
+      <div class="row"><span>Runs on</span><b>Open models</b></div>
+      <div class="row"><span>Cost per 1M tokens</span><b id="cost"></b></div>
+      <div class="row"><span>Closed frontier model</span><b>$10.00</b></div>
+      <p class="save" id="save"></p>
+    </div>
+    <p class="fine">Example prices to show the idea. Real costs depend on the model and your volume.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="head"><h2>One router. <span class="muted">Three jobs, done for you.</span></h2></div>
+  <div class="steps">
+    <div class="card"><span class="code">/route</span><h3>Read the request</h3><p>Graze looks at the kind of task and how big the input is, then scores how hard it will be.</p></div>
+    <div class="card hl"><span class="code">/pick</span><h3>Choose the smallest model that fits</h3><p>A low score goes to a small open model. A high score goes to a large one. Nothing is overpaid for.</p></div>
+    <div class="card"><span class="code">/run</span><h3>Run it on open infrastructure</h3><p>The call runs on open NVIDIA Nemotron models. You can see which model answered and what it cost.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="head"><h2>How a call travels. <span class="muted">Four stops, one answer.</span></h2></div>
+  <div class="flow">
+    <div class="card"><h3>Your app</h3><p>Sends a normal AI request. Nothing to change in your code but the address.</p></div>
+    <div class="link"></div>
+    <div class="card hl"><h3>Graze router</h3><p>Scores the task type and input size, then picks the smallest model that can handle it.</p></div>
+    <div class="link"></div>
+    <div class="card"><h3>Open model</h3><p>Runs the call on open infrastructure.</p><div class="chips"><span>small</span><span>mid size</span><span>large</span></div></div>
+    <div class="link"></div>
+    <div class="card"><h3>Answer and cost</h3><p>You get the reply, plus which model answered and what it cost.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="head" id="frontier"><h2>The frontier layer. <span class="muted">Three ways it goes further.</span></h2></div>
+  <div class="ftabs" id="ftabs"></div>
+  <div class="panel" id="p0">
+    <p class="lead">An agent does a task in steps. Each step goes to the right model, and you see the full bill.</p>
+    <button class="btn" id="run" type="button">Run the agent</button>
+    <div id="steps" style="margin-top:14px"></div>
+    <p class="big" id="agentsave"></p>
+  </div>
+  <div class="panel" id="p1" hidden>
+    <p class="lead">Graze checks each answer and remembers which model was good enough. Drag to see it learn.</p>
+    <div class="row"><span>Calls seen</span><b id="nv"></b></div>
+    <input type="range" id="calls" min="0" max="1000" value="0" aria-label="Calls seen">
+    <div class="row"><span>Sent to small models</span><b id="share"></b></div>
+    <div class="bar"><i id="bar"></i></div>
+    <p class="big" id="lcost"></p>
+  </div>
+  <div class="panel" id="p2" hidden>
+    <p class="lead">Same task, three open models. The winner is the cheapest one that passes.</p>
+    <p class="dl" style="color:var(--text-3);margin:0">Task: write a SQL query that finds the top 5 customers by spend.</p>
+    <div class="arena" id="arena">
+      <div class="ac"><h3>Small</h3><div class="sc">5/10</div><span class="vd">Missed a join. Fails.</span></div>
+      <div class="ac win"><h3>Mid size</h3><div class="sc">9/10</div><span class="vd">Passes. Cheapest pass. Winner.</span></div>
+      <div class="ac"><h3>Large</h3><div class="sc">9/10</div><span class="vd">Passes, but costs more.</span></div>
+    </div>
+    <button class="btn" id="judge" type="button">Run the arena</button>
+  </div>
+  <p class="fine">All three demos are simulated examples that show the idea. Real results come from the live tools above.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="head" id="tools"><h2>Try the tools. <span class="muted">Paste something and watch.</span></h2></div>
+  <div class="ftabs" id="qtabs"></div>
+  <div class="panel" id="q0">
+    <p class="lead">Paste any messy text. Graze pulls out the emails, phone numbers, dates, amounts and links.</p>
+    <textarea id="ex-in" aria-label="Text to extract from">Invoice 4821 from Acme Ltd. Total $1,250.00 due 15 Oct 2026. Questions: billing@acme.com or +234 801 234 5678. Pay at https://pay.acme.com/4821</textarea>
+    <button class="btn" id="ex-go" type="button">Extract data</button>
+    <div class="out" id="ex-out" aria-live="polite"></div>
+  </div>
+  <div class="panel" id="q1" hidden>
+    <p class="lead">Paste emails, with a blank line between each one. Graze sorts them and suggests what to do next.</p>
+    <textarea id="tr-in" aria-label="Emails to triage">Subject: Checkout is down, need help ASAP
+Our checkout page is down. Please call me immediately.
+
+Congratulations! You are a winner. Click here to claim your free prize now.
+
+This week in AI: your weekly digest. Unsubscribe any time.
+
+Hi, can you review the attached contract and send it back by Friday?</textarea>
+    <button class="btn" id="tr-go" type="button">Sort my inbox</button>
+    <div class="out" id="tr-out" aria-live="polite"></div>
+  </div>
+  <div class="panel" id="q2" hidden>
+    <p class="lead">Paste the steps you do every day, one per line. Graze finds the part that repeats and shows how to automate it.</p>
+    <textarea id="tl-in" aria-label="Steps you repeat">open spreadsheet
+copy new orders
+paste into invoice tool
+email invoice to client
+open spreadsheet
+copy new orders
+paste into invoice tool
+email invoice to client
+update status sheet</textarea>
+    <button class="btn" id="tl-go" type="button">Find the repeat</button>
+    <div class="out" id="tl-out" aria-live="polite"></div>
+  </div>
+  <div class="panel" id="q3" hidden>
+    <p class="lead">Paste a table with a header row, with commas between columns. Graze summarizes every column and charts the biggest groups.</p>
+    <textarea id="an-in" aria-label="Table to analyze">region,product,sales
+Lagos,Phone,1200
+Lagos,Laptop,2400
+Abuja,Phone,900
+Abuja,Laptop,1500
+Ibadan,Phone,600
+Ibadan,Laptop,800</textarea>
+    <button class="btn" id="an-go" type="button">Analyze the data</button>
+    <div class="out" id="an-out" aria-live="polite"></div>
+  </div>
+  <details class="byok" id="byok-box"><summary>Have a Nebius or NVIDIA key? Test live answers</summary>
+<p>Paste your own key to get real Nemotron answers. It stays in this browser tab (session storage) and is sent only with your request, through this site's function to Nebius Token Factory, or to NVIDIA if the key starts with nvapi-. It is never saved or logged. Close the tab to forget it.</p>
+<div class="row"><input id="byok" type="password" placeholder="Nebius Token Factory or NVIDIA (nvapi-) key" autocomplete="off" spellcheck="false" aria-label="Nebius or NVIDIA API key"><button class="btn" id="byok-save" type="button">Use key</button><button class="btn ghost" id="byok-clear" type="button">Remove</button><span id="byok-state" role="status"></span></div></details>
+<p class="fine">The rule based answer appears instantly in your browser. When live AI is on, an open model adds its own answer below, with the model used and the estimated cost.</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="head"><h2>Why open infrastructure <span class="muted">changes the price.</span></h2></div>
+  <div class="steps">
+    <div class="card"><h3>No lock in</h3><p>Open models mean you can switch models without rewriting your app.</p></div>
+    <div class="card"><h3>Pay for what you use</h3><p>Most calls are simple. Sending them to small models is where the savings come from.</p></div>
+    <div class="card"><h3>Built for agents</h3><p>Agents make thousands of calls. Cheap routing is what makes running them all day affordable.</p></div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <h2>Stop overpaying <span class="muted">for easy work.</span></h2>
+  <p class="lead">Graze Open is part of Graze, which already routes agent calls to the cheapest capable model.</p>
+  <div class="cta"><a class="btn" href="https://usegraze.world" target="_blank" rel="noopener">Visit Graze</a><a class="btn ghost" href="https://x.com/usegraze" target="_blank" rel="noopener">@usegraze on X</a></div>
+</div></section>
+</main>
+<footer>
+  <div class="fgrid">
+    <div class="fbrand">
+      <a class="logo" href="#top">Graze <span>Open</span></a>
+      <p>Every AI call on the cheapest open model that can do the job.</p>
+      <a class="fsoc" href="https://x.com/usegraze" target="_blank" rel="noopener" aria-label="Graze on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </div>
+    <div class="fcol"><h4>Product</h4>
+      <a href="#top">Overview</a><a href="#try">Demo</a><a href="#frontier">Frontier layer</a><a href="#tools">Tools</a>
+    </div>
+    <div class="fcol"><h4>Graze</h4>
+      <a href="https://usegraze.world" target="_blank" rel="noopener">usegraze.world</a><a href="https://x.com/usegraze" target="_blank" rel="noopener">@usegraze on X</a>
+    </div>
+    <div class="fcol"><h4>Built with</h4>
+      <a href="https://nebius.com" target="_blank" rel="noopener">Nebius</a><a href="https://nebiusglobalaihackathon.devpost.com" target="_blank" rel="noopener">Nebius x NVIDIA Hackathon</a>
+    </div>
+  </div>
+  <div class="fbot"><span>&copy; 2026 Graze Open. All rights reserved.</span><span>A Nebius x NVIDIA Global AI Hackathon entry</span></div>
+</footer>
+<script>
+var T=[
+{n:"Summarize a support ticket",m:"Small open model",c:0.1},
+{n:"Write a SQL query",m:"Mid size open model",c:0.8},
+{n:"Plan a multi step agent task",m:"Large open model",c:2.5}];
+var tabs=document.getElementById("tabs");
+function pick(i){
+  var t=T[i];
+  [].forEach.call(tabs.children,function(b,j){b.setAttribute("aria-pressed",j===i)});
+  document.getElementById("model").textContent=t.m;
+  document.getElementById("cost").textContent="$"+t.c.toFixed(2);
+  document.getElementById("save").textContent=Math.round((1-t.c/10)*100)+"% cheaper";
+}
+T.forEach(function(t,i){
+  var b=document.createElement("button");
+  b.className="tab";b.type="button";b.textContent=t.n;
+  b.onclick=function(){pick(i)};
+  tabs.appendChild(b);
+});
+pick(0);
+/* Frontier layer tabs: show one panel at a time */
+var names=["Agent mode","Learning router","Model arena"],ft=document.getElementById("ftabs");
+function showP(i){
+  names.forEach(function(_,j){
+    document.getElementById("p"+j).hidden=(j!==i);
+    ft.children[j].setAttribute("aria-pressed",j===i);
+  });
+}
+names.forEach(function(n,i){
+  var b=document.createElement("button");
+  b.className="ft";b.type="button";b.textContent=n;
+  b.onclick=function(){showP(i)};
+  ft.appendChild(b);
+});
+showP(0);
+/* Agent mode: reveal each routed step, then total the bill */
+var S=[["Search the web","Small open model",0.02],["Pull out the facts","Small open model",0.02],["Compare the options","Mid size open model",0.16],["Write the summary","Large open model",0.5],["Check for mistakes","Mid size open model",0.16]];
+var agentTimers=[];
+document.getElementById("run").onclick=function(){
+  var box=document.getElementById("steps"),out=document.getElementById("agentsave"),sum=0;
+  agentTimers.forEach(clearTimeout);agentTimers=[];
+  box.innerHTML="";out.textContent="";
+  S.forEach(function(s,i){
+    agentTimers.push(setTimeout(function(){
+      var d=document.createElement("div");
+      d.className="stp";
+      d.innerHTML="<span>"+s[0]+"</span><b>"+s[1]+" $"+s[2].toFixed(2)+"</b>";
+      box.appendChild(d);
+      requestAnimationFrame(function(){d.classList.add("on")});
+      sum+=s[2];
+      if(i===S.length-1){
+        var base=S.length*0.5;
+        out.textContent="$"+sum.toFixed(2)+" for the run, "+Math.round((1-sum/base)*100)+"% cheaper than $"+base.toFixed(2)+" on one frontier model";
+      }
+    },i*600));
+  });
+};
+/* Learning router: share of calls on small models grows with calls seen */
+var rng=document.getElementById("calls");
+function learn(){
+  var n=+rng.value,s=0.4+0.4*(1-Math.exp(-n/300));
+  document.getElementById("nv").textContent=n;
+  document.getElementById("share").textContent=Math.round(s*100)+"%";
+  document.getElementById("bar").style.width=Math.round(s*100)+"%";
+  document.getElementById("lcost").textContent="$"+(s*0.1+(1-s)*2.5).toFixed(2)+" per 1M tokens";
+}
+rng.oninput=learn;learn();
+/* Arena: reveal scores and mark the cheapest pass */
+var win=document.querySelector(".ac.win");win.classList.remove("win");
+document.getElementById("judge").onclick=function(){
+  document.getElementById("arena").classList.add("shown");
+  win.classList.add("win");
+};
+/* Tools: helper that adds a child div with optional text (textContent keeps pasted text safe) */
+function el(p,c,t){var d=document.createElement("div");d.className=c;if(t)d.textContent=t;p.appendChild(d);return d}
+function pill(d,c,t){var s=document.createElement("span");s.className="pill "+c;s.textContent=t;d.appendChild(s)}
+var QN=["Data extractor","Inbox triage","Toil spotter","Data analyst"],qt=document.getElementById("qtabs");
+function showQ(i){QN.forEach(function(_,j){document.getElementById("q"+j).hidden=(j!==i);qt.children[j].setAttribute("aria-pressed",j===i)})}
+QN.forEach(function(n,i){var b=document.createElement("button");b.className="ft";b.type="button";b.textContent=n;b.onclick=function(){showQ(i)};qt.appendChild(b)});
+showQ(0);
+/* Data extractor: pull each pattern out, then blank it so the next pattern cannot match it again */
+document.getElementById("ex-go").onclick=function(){
+  var work=document.getElementById("ex-in").value,out=document.getElementById("ex-out"),found=[];
+  out.innerHTML="";
+  function grab(label,re){(work.match(re)||[]).forEach(function(v){found.push([label,v.trim().replace(/[.,;]+$/,"")])});work=work.replace(re," ")}
+  grab("Email",/[\w.+-]+@[\w-]+\.[\w.-]+/g);
+  grab("Link",/https?:\/\/\S+/g);
+  grab("Date",/\b\d{1,2}\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s\d{4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/gi);
+  grab("Amount",/[$€£₦]\s?\d[\d,]*(?:\.\d{2})?/g);
+  grab("Phone",/\+?\d[\d\s().-]{8,}\d/g);
+  if(!found.length){el(out,"item","Nothing found. Try text with an email, date, amount or link.");return}
+  found.forEach(function(f){var d=el(out,"item");pill(d,"n",f[0]);d.appendChild(document.createTextNode(f[1]))});
+};
+/* Inbox triage: first matching rule wins, in order spam, urgent, newsletter, action */
+var R=[["s","Spam",/winner|free prize|click here|congratulations|act now|limited offer|giveaway/i,"Delete it and block the sender."],
+["u","Urgent",/urgent|asap|immediately|overdue|deadline today|\bdown\b|outage/i,"Reply within the hour."],
+["n","Newsletter",/unsubscribe|newsletter|weekly digest|this week in/i,"Read later or unsubscribe."],
+["a","Action needed",/\?|please|can you|could you|review|approve|send it/i,"Add it to your list and reply today."]];
+document.getElementById("tr-go").onclick=function(){
+  var out=document.getElementById("tr-out");out.innerHTML="";
+  document.getElementById("tr-in").value.split(/\n\s*\n/).forEach(function(m){
+    m=m.trim();if(!m)return;
+    var r=R.filter(function(x){return x[2].test(m)})[0]||["n","No action needed","","Archive it."];
+    var d=el(out,"item");pill(d,r[0],r[1]);
+    d.appendChild(document.createTextNode(m.replace(/\s+/g," ").slice(0,90)));
+    var s=document.createElement("small");s.textContent="Next step: "+r[3];d.appendChild(s);
+  });
+};
+/* Toil spotter: score every block of 1 to 5 lines by length times repeats, keep the best */
+document.getElementById("tl-go").onclick=function(){
+  var out=document.getElementById("tl-out");out.innerHTML="";
+  var raw=document.getElementById("tl-in").value.split("\n").map(function(s){return s.trim()}).filter(Boolean);
+  var norm=raw.map(function(s){return s.toLowerCase().replace(/\d+/g,"#").replace(/[^a-z# ]/g,"")});
+  var seen={},best=null;
+  for(var L=1;L<=5;L++)for(var i=0;i+L<=norm.length;i++){var k=norm.slice(i,i+L).join("|");if(!seen[k])seen[k]={n:0,i:i,L:L};seen[k].n++}
+  Object.keys(seen).forEach(function(k){var s=seen[k];if(s.n>1&&(!best||s.L*s.n>best.L*best.n))best=s});
+  if(!best){el(out,"item","No repeats found. Paste a few days of steps, one per line.");return}
+  var steps=raw.slice(best.i,best.i+best.L),d=el(out,"item","This block repeats "+best.n+" times:");
+  steps.forEach(function(s,j){var x=document.createElement("small");x.textContent=(j+1)+". "+s;d.appendChild(x)});
+  var a=el(out,"item","How to automate it:");
+  ["Trigger: a daily schedule, or a new row in your sheet.","Run these steps as one workflow, one action per step."].concat(steps.map(function(s){return "Automate: "+s})).concat(["Tool: n8n, Zapier, or a short script."]).forEach(function(t){var x=document.createElement("small");x.textContent=t;a.appendChild(x)});
+};
+/* Data analyst: summarize each column, then chart the first number column grouped by the first text column */
+document.getElementById("an-go").onclick=function(){
+  var out=document.getElementById("an-out");out.innerHTML="";
+  var rows=document.getElementById("an-in").value.trim().split("\n").map(function(r){return r.split(",").map(function(c){return c.trim()})});
+  if(rows.length<2){el(out,"item","Paste a header row and at least one data row.");return}
+  var h=rows[0],d=rows.slice(1),nc=-1,cc=-1;
+  el(out,"item",d.length+" rows and "+h.length+" columns.");
+  h.forEach(function(name,c){
+    var v=d.map(function(r){return r[c]||""}),n=v.map(Number);
+    if(v.every(function(x,i){return x!==""&&!isNaN(n[i])})){
+      if(nc<0)nc=c;var sum=n.reduce(function(a,b){return a+b},0);
+      el(out,"item",name+": total "+sum.toLocaleString()+", average "+(sum/n.length).toFixed(1)+", lowest "+Math.min.apply(null,n)+", highest "+Math.max.apply(null,n)+".");
+    }else{
+      if(cc<0)cc=c;var u={};v.forEach(function(x){u[x]=(u[x]||0)+1});
+      var top=Object.keys(u).sort(function(a,b){return u[b]-u[a]})[0];
+      el(out,"item",name+": "+Object.keys(u).length+" different values, most common is "+top+".");
+    }
+  });
+  if(nc<0||cc<0)return;
+  var g={},tot=0;d.forEach(function(r){var x=+r[nc];g[r[cc]]=(g[r[cc]]||0)+x;tot+=x});
+  var ks=Object.keys(g).sort(function(a,b){return g[b]-g[a]}),box=el(out,"item","Total "+h[nc]+" by "+h[cc]);
+  ks.forEach(function(k){
+    var r=el(box,"row"),s=document.createElement("span");s.textContent=k;r.appendChild(s);
+    var b=document.createElement("b");b.textContent=g[k].toLocaleString();r.appendChild(b);
+    var bar=el(box,"bar"),i=document.createElement("i");i.style.width=Math.max(0,Math.round(g[k]/g[ks[0]]*100))+"%";bar.appendChild(i);
+  });
+  if(tot>0)el(out,"item",ks[0]+" leads with "+Math.round(g[ks[0]]/tot*100)+"% of all "+h[nc]+".");
+};
+/* Live AI: ask the server function and add an answer card under the rule based result.
+   Add ?mock=1 to the page address to test this path without an API key. */
+var MOCK=/[?&]mock=1\b/.test(location.search);
+var REASONS={bad_key:"Nebius did not accept that key. Check it and try again.",rate_limited:"Live AI limit reached for now. The rule based result above still works.",busy:"Live AI is busy. The rule based result above still works.",timeout:"The AI model took too long. The rule based result above still works.",upstream_error:"The AI model could not answer. The rule based result above still works.",empty_answer:"The AI model returned nothing. The rule based result above still works.",network_error:"Could not reach the AI model. The rule based result above still works."};
+var AIT={"ex-go":["extract","ex-in","ex-out"],"tr-go":["triage","tr-in","tr-out"],"tl-go":["toil","tl-in","tl-out"],"an-go":["analyze","an-in","an-out"]};
+var aiSeq={};
+var KEYNAME="graze_key";
+function getKey(){try{return sessionStorage.getItem(KEYNAME)||""}catch(e){return ""}}
+function byokState(){var st=document.getElementById("byok-state");if(st)st.textContent=getKey()?"Key in use for this tab":""}
+(function(){
+  var inp=document.getElementById("byok"),sv=document.getElementById("byok-save"),cl=document.getElementById("byok-clear");
+  if(!inp)return;
+  sv.onclick=function(){var v=inp.value.trim();if(!v||/\s/.test(v))return;try{sessionStorage.setItem(KEYNAME,v)}catch(e){}inp.value="";byokState()};
+  cl.onclick=function(){try{sessionStorage.removeItem(KEYNAME)}catch(e){}inp.value="";byokState()};
+  byokState();
+})();
+Object.keys(AIT).forEach(function(id){
+  var btn=document.getElementById(id),rules=btn.onclick,c=AIT[id];
+  btn.onclick=function(){
+    rules();
+    var text=document.getElementById(c[1]).value,out=document.getElementById(c[2]);
+    if(!text.trim())return;
+    var me=(aiSeq[id]||0)+1;aiSeq[id]=me;          /* ignore answers from older clicks */
+    var wait=el(out,"item wait","Asking an open model...");
+    btn.disabled=true;
+    function done(){if(aiSeq[id]===me){btn.disabled=false;if(wait.parentNode)wait.parentNode.removeChild(wait)}}
+    fetch("/api/ai",{method:"POST",headers:(function(){var h={"Content-Type":"application/json"},k=getKey();if(k&&!MOCK)h["x-nebius-key"]=k;return h})(),body:JSON.stringify({task:c[0],text:text,mock:MOCK})})
+    .then(function(r){return r.json().catch(function(){return {live:false}})})
+    .then(function(j){
+      if(aiSeq[id]!==me)return;
+      done();
+      if(!j.live){if(REASONS[j.reason])el(out,"item err",REASONS[j.reason]+(j.reason==="upstream_error"&&j.status?" (status "+j.status+")":""));return}   /* no_key stays silent */
+      var d=el(out,"item ai","AI answer: "+j.answer);
+      if(j.mock){var tg=document.createElement("span");tg.className="tag";tg.textContent="mock";d.insertBefore(tg,d.firstChild)}
+      var s=document.createElement("small");
+      var where=j.provider==="nvidia"?"NVIDIA API catalog":"Nebius";var line="Model: "+j.model+" on "+where+", "+j.tokens+" tokens";
+      if(j.route)line+=", routed to "+j.route.tier+(j.route.reasons&&j.route.reasons.length?" ("+j.route.reasons.join(", ")+")":"");
+      s.textContent=line;d.appendChild(s);
+      if(typeof j.cost==="number"&&j.tokens){
+        var s2=document.createElement("small");
+        s2.textContent="Estimated cost $"+j.cost.toFixed(6)+" vs $"+j.frontierCost.toFixed(6)+" on a closed frontier model, "+j.savedPct+"% cheaper (example prices)";
+        d.appendChild(s2);
+      }
+    }).catch(function(){if(aiSeq[id]===me)done()});
+  };
+});
+</script>
+</body>
+</html>
