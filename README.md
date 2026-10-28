@@ -18,6 +18,14 @@ Graze Open scores each request and sends it to the smallest NVIDIA Nemotron mode
 
 Four tools show it working: a data extractor, an inbox triage, a toil spotter that finds repeated steps and suggests how to automate them, and a data analyst. Each gives an instant rule based result in the browser, plus an AI answer from a Nemotron model when live calls are on.
 
+## For judges: requirements checklist
+
+- **Open source license:** MIT (see `LICENSE`).
+- **Setup instructions:** see "Setup and run" below.
+- **NVIDIA Nemotron models:** every live answer comes from an NVIDIA Nemotron open source model. The small tier uses `nemotron-3.5-lightning-30b-a3b`, the mid tier uses `nemotron-3.5-super-vl-120b-a12b`, and the large tier uses `nemotron-3-ultra-550b-a55b` (names are set in `api/ai.js` and can be overridden with environment variables).
+- **Nebius Token Factory:** the Token Factory call is implemented in `api/ai.js` (OpenAI-compatible chat completions endpoint) and is used whenever a Nebius key is available. I could not create my own Token Factory key because billing registration is not available in my country, so I have not been able to run Token Factory calls from my own account, and I do not claim that Token Factory accelerated my workflow. The hosted demo therefore calls NVIDIA's API catalog for the same Nemotron models. To test the Token Factory path, paste your own Nebius key into the box on the demo page, or set `NEBIUS_API_KEY` on your own deployment.
+- **Other Nebius tools or services:** none were used.
+
 ## How it uses NVIDIA models, Nebius and the NVIDIA API catalog
 
 - **NVIDIA Nemotron open source models:** a small Nemotron model handles easy, high volume tasks, a mid size one handles the middle tier, and the large Nemotron Ultra model is kept for the hardest or longest requests.
